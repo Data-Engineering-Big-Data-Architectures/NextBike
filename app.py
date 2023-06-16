@@ -2,6 +2,8 @@ from google.cloud import bigquery
 import os
 import json
 import requests
+import schedule
+import threading
 import time
 from google.cloud.exceptions import Conflict
 
@@ -16,7 +18,12 @@ table_id = 'Live'
 # Instantiates a BigQuery client
 bigquery_client = bigquery.Client(project=project_id)
 
+# URL of NextBike API
+url = 'https://api.nextbike.net/maps/nextbike-live.json'
+
+#create big data query schema
 def create_table_if_not_exists():
+
     """Create a BigQuery table if it doesn't exist."""
     dataset_ref = bigquery_client.dataset(dataset_id)
     dataset = bigquery.Dataset(dataset_ref)
@@ -68,15 +75,14 @@ def create_table_if_not_exists():
     try:
         table = bigquery_client.create_table(table)  # API request
         print(f"Created table {table.table_id}")
-        time.sleep(3)
     except Conflict:
         print(f"Table {table.table_id} already exists.")
 
-# URL of NextBike API
-url = 'https://api.nextbike.net/maps/nextbike-live.json'
 
+def fetch_data_from_api():
 
-def insert_into_big_query():
+    print(f"Data fetch started at {time.strftime('%X')}")
+
     # Make a GET request to the NextBike API
     response = requests.get(url)
 
@@ -84,106 +90,128 @@ def insert_into_big_query():
     if response.status_code == 200:
         print("Data fetched from API")
         data = response.json()
-        table_ref = bigquery_client.dataset(dataset_id).table(table_id)
-        table = bigquery_client.get_table(table_ref)
-        count = 0
-        rows = []
-
-        for country in data['countries']:
-            for city in country['cities']:
-                for station in city['places']:
-                    for bike  in station['bike_list']:
-                        message = {
-                            'vendor_latitude' : country.get('lat'),
-                            'vendor_longitude' : country.get('lng'),
-                            'vendor_name' : country.get('name'),
-                            'currency' : country.get('currency'),
-                            'country_code' : country.get('country'),
-                            'country_name' : country.get('country_name'),
-                            'booked_bikes' : country.get('booked_bikes'),
-                            'set_point_bikes' : country.get('set_point_bikes'),
-                            'available_bikes' : country.get('available_bikes'),
-                            'vat' : country.get('vat'),
-                            'city_uid' : city.get('uid'),
-                            'city_latitude' : city.get('lat'),
-                            'city_longitude' : city.get('lng'),
-                            'vendor_alias' : city.get('alias'),
-                            'city_name' : city.get('name'),
-                            'num_places' : city.get('num_places'),
-                            'refresh_rate' : city.get('refresh_rate'),
-                            'city_booked_bikes' : city.get('booked_bikes'),
-                            'city_set_point_bikes' : city.get('set_point_bikes'),
-                            'city_available_bikes' : city.get('available_bikes'),
-                            'return_to_official_only' : city.get('return_to_official_only'),
-                            'station_uid' : station.get('uid'),
-                            'station_latitude' : station.get('lat'),
-                            'station_longitude' : station.get('lng'),
-                            'station_name' : station.get('name'),
-                            'station_number' : station.get('number'),
-                            'station_booked_bikes' : station.get('booked_bikes'),
-                            'station_bikes' : station.get('bikes'),
-                            'bikes_available_to_rent' : station.get('bikes_available_to_rent'),
-                            'bike_racks' : station.get('bike_racks'),
-                            'free_racks' : station.get('free_racks'),
-                            'special_racks' : station.get('special_racks'),
-                            'free_special_racks' : station.get('free_special_racks'),
-                            'bike_number' : bike.get('number'),
-                            'bike_type' : bike.get('bike_type'),
-                            'active' : bike.get('active'),
-                            'state' : bike.get('state'),
-                            'electric_lock' : bike.get('electric_lock'),
-                            'boardcomputer' : bike.get('boardcomputer')
-                        }
-                    
-                        row = [
-                            message.get('vendor_latitude'),
-                            message.get('vendor_longitude'),
-                            message.get('vendor_name'),
-                            message.get('currency'),
-                            message.get('country_code'),
-                            message.get('country_name'),
-                            message.get('booked_bikes'),
-                            message.get('set_point_bikes'),
-                            message.get('available_bikes'),
-                            message.get('vat'),
-                            message.get('city_uid'),
-                            message.get('city_latitude'),
-                            message.get('city_longitude'),
-                            message.get('vendor_alias'),
-                            message.get('city_name'),
-                            message.get('num_places'),
-                            message.get('refresh_rate'),
-                            message.get('city_booked_bikes'),
-                            message.get('city_set_point_bikes'),
-                            message.get('city_available_bikes'),
-                            message.get('return_to_official_only'),
-                            message.get('station_uid'),
-                            message.get('station_latitude'),
-                            message.get('station_longitude'),
-                            message.get('station_name'),
-                            message.get('station_number'),
-                            message.get('station_booked_bikes'),
-                            message.get('station_bikes'),
-                            message.get('bikes_available_to_rent'),
-                            message.get('bike_racks'),
-                            message.get('free_racks'),
-                            message.get('special_racks'),
-                            message.get('free_special_racks'),
-                            message.get('bike_number'),
-                            message.get('bike_type'),
-                            message.get('active'),
-                            message.get('state'),
-                            message.get('electric_lock'),
-                            message.get('boardcomputer')
-                        ]
-                        rows.append(row)
-                        count = count + 1
-                        if(count % 5000 == 0):
-                            if(insertRows(bigquery_client, table, rows, count)):
-                                rows = []
-        insertRows(bigquery_client, table, rows, count)
+        print(f"Data fetch ended at {time.strftime('%X')}")
+        return data
     else:
         print(f'Request failed with status code {response.status_code}')
+        return False
+
+
+def truncate_bigquery_table():
+    # Create a reference to the source table
+    table_ref = bigquery_client.dataset(dataset_id).table(table_id)
+
+    # Delete the source table
+    bigquery_client.delete_table(table_ref)
+    print(f"Deleted table {table_id}")
+
+    create_table_if_not_exists()
+    time.sleep(5)
+
+
+
+def insert_into_big_query(data):
+    print(f"Data insertion into BigQuery started at {time.strftime('%X')}")
+
+    table_ref = bigquery_client.dataset(dataset_id).table(table_id)
+    table = bigquery_client.get_table(table_ref)
+    count = 0
+    rows = []
+
+    for country in data['countries']:
+        for city in country['cities']:
+            for station in city['places']:
+                for bike  in station['bike_list']:
+                    message = {
+                        'vendor_latitude' : country.get('lat'),
+                        'vendor_longitude' : country.get('lng'),
+                        'vendor_name' : country.get('name'),
+                        'currency' : country.get('currency'),
+                        'country_code' : country.get('country'),
+                        'country_name' : country.get('country_name'),
+                        'booked_bikes' : country.get('booked_bikes'),
+                        'set_point_bikes' : country.get('set_point_bikes'),
+                        'available_bikes' : country.get('available_bikes'),
+                        'vat' : country.get('vat'),
+                        'city_uid' : city.get('uid'),
+                        'city_latitude' : city.get('lat'),
+                        'city_longitude' : city.get('lng'),
+                        'vendor_alias' : city.get('alias'),
+                        'city_name' : city.get('name'),
+                        'num_places' : city.get('num_places'),
+                        'refresh_rate' : city.get('refresh_rate'),
+                        'city_booked_bikes' : city.get('booked_bikes'),
+                        'city_set_point_bikes' : city.get('set_point_bikes'),
+                        'city_available_bikes' : city.get('available_bikes'),
+                        'return_to_official_only' : city.get('return_to_official_only'),
+                        'station_uid' : station.get('uid'),
+                        'station_latitude' : station.get('lat'),
+                        'station_longitude' : station.get('lng'),
+                        'station_name' : station.get('name'),
+                        'station_number' : station.get('number'),
+                        'station_booked_bikes' : station.get('booked_bikes'),
+                        'station_bikes' : station.get('bikes'),
+                        'bikes_available_to_rent' : station.get('bikes_available_to_rent'),
+                        'bike_racks' : station.get('bike_racks'),
+                        'free_racks' : station.get('free_racks'),
+                        'special_racks' : station.get('special_racks'),
+                        'free_special_racks' : station.get('free_special_racks'),
+                        'bike_number' : bike.get('number'),
+                        'bike_type' : bike.get('bike_type'),
+                        'active' : bike.get('active'),
+                        'state' : bike.get('state'),
+                        'electric_lock' : bike.get('electric_lock'),
+                        'boardcomputer' : bike.get('boardcomputer')
+                    }
+                
+                    row = [
+                        message.get('vendor_latitude'),
+                        message.get('vendor_longitude'),
+                        message.get('vendor_name'),
+                        message.get('currency'),
+                        message.get('country_code'),
+                        message.get('country_name'),
+                        message.get('booked_bikes'),
+                        message.get('set_point_bikes'),
+                        message.get('available_bikes'),
+                        message.get('vat'),
+                        message.get('city_uid'),
+                        message.get('city_latitude'),
+                        message.get('city_longitude'),
+                        message.get('vendor_alias'),
+                        message.get('city_name'),
+                        message.get('num_places'),
+                        message.get('refresh_rate'),
+                        message.get('city_booked_bikes'),
+                        message.get('city_set_point_bikes'),
+                        message.get('city_available_bikes'),
+                        message.get('return_to_official_only'),
+                        message.get('station_uid'),
+                        message.get('station_latitude'),
+                        message.get('station_longitude'),
+                        message.get('station_name'),
+                        message.get('station_number'),
+                        message.get('station_booked_bikes'),
+                        message.get('station_bikes'),
+                        message.get('bikes_available_to_rent'),
+                        message.get('bike_racks'),
+                        message.get('free_racks'),
+                        message.get('special_racks'),
+                        message.get('free_special_racks'),
+                        message.get('bike_number'),
+                        message.get('bike_type'),
+                        message.get('active'),
+                        message.get('state'),
+                        message.get('electric_lock'),
+                        message.get('boardcomputer')
+                    ]
+                    rows.append(row)
+                    count = count + 1
+                    if(count % 5000 == 0):
+                        if(insertRows(bigquery_client, table, rows, count)):
+                            rows = []
+    insertRows(bigquery_client, table, rows, count)
+    print(f"Data insertion into BigQuery ended at {time.strftime('%X')}")
         
 def insertRows(bigquery_client, table, rows, count):
     errors = bigquery_client.insert_rows(table, rows)
@@ -195,5 +223,36 @@ def insertRows(bigquery_client, table, rows, count):
         return True
 
 # Create the BigQuery table if it doesn't exist
-create_table_if_not_exists()
-insert_into_big_query()
+def run_pipeline():
+    create_table_if_not_exists()
+    data = fetch_data_from_api()
+    if(data):
+        truncate_bigquery_table()
+        insert_into_big_query(data)
+
+# run_pipeline()
+
+
+# Create a global flag for the running state of the loop
+running = True
+
+# Define stop function to listen to user input
+def stop():
+    global running
+    while running:
+        stop_input = input()
+        if stop_input.lower() == 's':
+            print('Stopping gracefully...')
+            running = False
+
+# Start stop function in a separate thread
+stop_thread = threading.Thread(target=stop)
+stop_thread.start()
+
+# Schedule the job to be run every minute
+schedule.every(1).minutes.do(run_pipeline)
+
+while running:
+    # Run pending jobs
+    schedule.run_pending()
+    time.sleep(1)
