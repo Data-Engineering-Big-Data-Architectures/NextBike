@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "sonorous-antler-389221",
+  "private_key_id": "f61095f6af9a4b2a9365b0402d202f2e411febab",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC3v/wI55awSZ/g\nxGUz8XbSKYMNpYUoDpo+Dgu1+22nb/FrzEnKS01HsA4N6tHWcH004G5SZjUGz/dA\naVuMr95DGZvidp8sIp/DqTi5pbp8Qa9k83I3SokKXRyII4lDlA8NTKcayKmmUU9F\ngqqPcsHoo1htNXOPXlM4/4IQhYPbynyq6pXpeirijKsUPEQDU1bWXNdCg7FrA9wp\nd1L6JI7nljf7512zvIXzp2kJmG7RVGDKWNplOIZZiZCtpAFJInMijBPLG9GEmzUC\n1DpVmfhwHBYOMMvg5PlaWbIspujnz83Fd7CNTEW1fjUQIhsUm7b1oPMoToF4Dnow\nEW9pZw+zAgMBAAECggEAMTocVfBhVPIshGVpLXzLlessInxNC5m55dUSexsUWe6q\nEXSl8i2xUvrOERlvRRFW4dMcizO5kg0mEtoG/k5hb72NHyMjaooOHjeYLFhDeSWJ\nzTRRTZHI2/9s9OX8UJ/6VlhKTmki1h1jbN5gPlUCsQYN2xgeUPL2vcbp++4hEMEe\n3sPNf2cHqcwIV2uZDhE7zKJyvw0bJ8DI+HVvybtkrRhAlur1HIkDwFwrIYxAwYFk\nLmV0pAhXPPsyuNXoA/0ynOHjY0vmt9lPETNQipvPwj/FjFX5unrfy+AhBr/eUxKa\nIdleWmdaWqypqFLjkUr0FXzXppjsD3JUN4EsApitUQKBgQDdxFXXAhMPfIzfvdyW\nEjfl9Ekzl8bIF7nwaDb/bB2DvyYoScWRkjbiT1dH6QEuaT60HeqfEg1tTt7JEkfb\nuMeBsqwgitFFG3SAeAUqdYhrFhIbVA8Mz1MqL0ckXOD3Iiy7q1UTXKiD9tZqAq+w\njqnnctqKx1uzdE73vjqywcoY4wKBgQDUHVB3yoDkWCjHTJsHyRQ9c6V9zuoqsyZz\nP9tFgP1gwQDpBKSwBQAa9uvBmVPkS/iTeVaECBInVVQNC/qnwZOSqzfUyhicB8CA\n2Kn8tclqj7W/9ybMMR7hY/PmSBRuWZ4CG5m+DQQfuzbTG8lNyhRnrsuNfMRtu69M\n/pDSiy928QKBgQDGus+VunUsNpfjVLfc//x5pF0Iz+VBoAlvR2SppdAZJO1jwyA6\nIEXwrdrwRPxbA9M+A2UiIUJJBxmcJDaizsZyEpQvIVcBT+YpzeQLNYIHPKMDPGO0\nPgIv1mgxTM4IiOZ/Ur0NecZFY6inHTslw+K71u/C1330pbCyUBU35XNeswKBgQCx\nTie7WpzPQxojLlfQ9DZk/8xwE4wOUV5srA4gVSh3vh2Cqoz3Tda+s3RyijZj+VU6\nAQ1epFh4ZI0zsrW9kMRIr7KlvqE/nANAMNw3D8Xju2kTpAbcXJsRkLmJ3uqlK2g3\nHtcu1DaER7wWT32/9pGD8crY5FhV2bM5SvnH5OyyIQKBgQCOa6ZSCJ+zf+WmrFXL\nHYxGX/rCTvtORMdUb4jf5WLHYLgwJa5GrCJ1YrkjKzmQzOHB3eTEhcBxsbPyLvl8\nUSVsf9JQqsLIHVlhAb2SXp7Crwcg8vAGx7FlN57e/nG830S6jUSADpwu0JWc5W1X\nZNLQB3g7jY2LUM1qh18WtilAvA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "nextbike-data@sonorous-antler-389221.iam.gserviceaccount.com",
+  "client_id": "114388438877841373632",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nextbike-data%40sonorous-antler-389221.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
